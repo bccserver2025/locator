@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+  <meta charset="UTF-8">
+  <title>نظام تتبع الأشخاص - الكويت</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Tahoma', sans-serif;
+      background: #f2f5f9;
+      direction: rtl;
+    }
+
+    header {
+      background-color: #1e3a8a;
+      color: white;
+      text-align: center;
+      padding: 30px 20px;
+      font-size: 24px;
+      font-weight: bold;
+      letter-spacing: 1px;
+    }
+
+    .container {
+      max-width: 400px;
+      margin: 50px auto;
+      background: white;
+      padding: 30px;
+      border-radius: 15px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.1);
+    }
+
+    h2 {
+      margin-bottom: 20px;
+      text-align: center;
+      color: #1e293b;
+    }
+
+    input {
+      width: 100%;
+      padding: 12px;
+      margin-top: 10px;
+      margin-bottom: 20px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 16px;
+      background: #f9fafb;
+    }
+
+    button {
+      width: 100%;
+      padding: 12px;
+      background: #2563eb;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 17px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    button:hover {
+      background: #1d4ed8;
+    }
+
+    #loader {
+      display: none;
+      text-align: center;
+      margin-top: 100px;
+    }
+
+    .loading-text {
+      font-size: 18px;
+      color: #555;
+    }
+
+    .dot {
+      display: inline-block;
+      width: 10px;
+      height: 10px;
+      margin: 3px;
+      border-radius: 50%;
+      background: #3b82f6;
+      animation: blink 1.2s infinite;
+    }
+
+    .dot:nth-child(2) { animation-delay: 0.2s; }
+    .dot:nth-child(3) { animation-delay: 0.4s; }
+
+    @keyframes blink {
+      0%, 100% { opacity: 0.2; }
+      50% { opacity: 1; }
+    }
+
+    #map {
+      display: none;
+      height: 100vh;
+      width: 100%;
+    }
+
+    .success-msg {
+      text-align: center;
+      color: green;
+      font-size: 18px;
+      margin: 20px 0;
+    }
+
+    footer {
+      background-color: #1e293b;
+      color: white;
+      padding: 15px;
+      text-align: center;
+      font-size: 14px;
+      margin-top: 40px;
+    }
+
+    @media (max-width: 500px) {
+      .container {
+        margin: 30px 15px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  نظام تتبع الأشخاص - الكويت
+</header>
+
+<!-- الخطوة 1: تسجيل الدخول -->
+<div id="step1" class="container">
+  <h2>تسجيل الدخول للنظام</h2>
+  <input type="text" id="username" placeholder="اسم المستخدم">
+  <input type="password" id="password" placeholder="كلمة المرور">
+  <button onclick="login()">دخول</button>
+</div>
+
+<!-- الخطوة 2: بيانات العميل -->
+<div id="step2" class="container" style="display: none;">
+  <h2>بيانات العميل المستهدف</h2>
+  <input type="text" id="clientName" placeholder="اسم العميل">
+  <input type="tel" id="clientPhone" placeholder="رقم هاتف العميل">
+  <button onclick="submitClient()">ابدأ التتبع</button>
+</div>
+
+<!-- الخطوة 3: لودينغ -->
+<div id="loader">
+  <div class="loading-text">جاري تحديد الموقع
+    <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+  </div>
+</div>
+
+<!-- الخطوة 4: الخريطة -->
+<div id="map"></div>
+<div class="success-msg" id="successMsg" style="display:none;">✔ تم تحديد موقع العميل 100%</div>
+
+<!-- فوتر -->
+<footer>
+  جميع الحقوق محفوظة © 2025 - نظام تتبع العملاء في الكويت
+</footer>
+
+<!-- Leaflet JS -->
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script>
+  function login() {
+    const user = document.getElementById('username').value.trim();
+    const pass = document.getElementById('password').value.trim();
+
+    if(user && pass) {
+      document.getElementById('step1').style.display = 'none';
+      document.getElementById('step2').style.display = 'block';
+    } else {
+      alert("يرجى تعبئة اسم المستخدم وكلمة المرور");
+    }
+  }
+
+  function submitClient() {
+    const name = document.getElementById('clientName').value.trim();
+    const phone = document.getElementById('clientPhone').value.trim();
+
+    if(name && phone) {
+      document.getElementById('step2').style.display = 'none';
+      document.getElementById('loader').style.display = 'block';
+
+      setTimeout(() => {
+        document.getElementById('loader').style.display = 'none';
+        document.getElementById('map').style.display = 'block';
+        document.getElementById('successMsg').style.display = 'block';
+        showMap();
+      }, 3000); // وهمي
+    } else {
+      alert("يرجى إدخال اسم ورقم العميل");
+    }
+  }
+
+  function showMap() {
+    const fakeLocation = [29.3759, 47.9774]; // وسط الكويت
+    const map = L.map('map').setView(fakeLocation, 14);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
+
+    L.marker(fakeLocation).addTo(map)
+      .bindPopup('تم تحديد موقع العميل بنجاح')
+      .openPopup();
+  }
+</script>
+
+</body>
+</html>

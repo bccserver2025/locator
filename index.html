@@ -2,9 +2,10 @@
 <html lang="ar">
 <head>
   <meta charset="UTF-8">
-  <title>KW Locator - نظام تحديد الموقع</title>
+  <title>KW Locator - نظام تحديد موقع الأشخاص</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
   <style>
     body {
       font-family: 'Cairo', sans-serif;
@@ -38,7 +39,7 @@
     }
 
     input {
-      width: 100%;
+      width: 90%;
       padding: 12px;
       border: none;
       border-radius: 10px;
@@ -96,6 +97,17 @@
       min-height: 24px;
     }
 
+    #map-section {
+      display: none;
+    }
+
+    #map {
+      height: 350px;
+      width: 100%;
+      margin-top: 20px;
+      border-radius: 15px;
+    }
+
     footer {
       margin-top: 50px;
       padding: 15px;
@@ -106,11 +118,11 @@
 </head>
 <body>
 
-<header>KW Locator - نظام تحديد موقع الأشخاص في الكويت</header>
+<header>  نظام تحديد موقع الشخص - KW Locator </header>
 
 <div class="container" id="form-section">
   <h2>تسجيل الدخول</h2>
-  <input type="text" id="username" placeholder="اسم المستخدم">
+  <input type="email" id="username" placeholder="الأيميل ">
   <input type="password" id="password" placeholder="كلمة المرور">
   <button onclick="login()">دخول</button>
 </div>
@@ -130,8 +142,15 @@
   <div class="status-msg" id="statusMessage">جاري الاتصال بمزود الخدمة...</div>
 </div>
 
-<footer>© 2025 KW Locator - نظام تتبع الأشخاص في الكويت</footer>
+<div class="container" id="map-section">
+  <h2>تم تحديد الموقع الحالي للعميل:</h2>
+  <p id="clientNameDisplay" style="font-size: 20px; font-weight: bold;"></p>
+  <div id="map"></div>
+</div>
 
+<footer>© 2025 KW Locator - نظام تتبع الأشخاص </footer>
+
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 <script>
   function login() {
     const user = document.getElementById("username").value.trim();
@@ -140,7 +159,7 @@
       document.getElementById("form-section").style.display = "none";
       document.getElementById("client-section").style.display = "block";
     } else {
-      alert("يرجى تعبئة اسم المستخدم وكلمة المرور");
+      alert("يرجى تعبئة الأيميل وكلمة المرور");
     }
   }
 
@@ -183,11 +202,25 @@
         }
       } else {
         clearInterval(interval);
-        setTimeout(() => {
-          window.location.href = "https://maps.google.com?q=29.3759,47.9774"; // موقع في الكويت
-        }, 1000);
+        document.getElementById("progress-section").style.display = "none";
+        document.getElementById("map-section").style.display = "block";
+        document.getElementById("clientNameDisplay").textContent = document.getElementById("clientName").value;
+        showMap();
       }
-    }, 100); // 1800ms * 100 = 180000ms = 3 دقائق
+    }, 1800); // يستغرق حوالي 18 ثانية
+  }
+
+  function showMap() {
+    const fakeLocation = [29.3759, 47.9774]; // وسط مدينة الكويت
+    const map = L.map('map').setView(fakeLocation, 14);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
+
+    L.marker(fakeLocation).addTo(map)
+      .bindPopup(' 🟢 تم تحديد موقع العميل بنجاح')
+      .openPopup();
   }
 </script>
 

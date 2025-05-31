@@ -2,214 +2,192 @@
 <html lang="ar">
 <head>
   <meta charset="UTF-8">
-  <title>نظام تتبع الأشخاص - الكويت</title>
+  <title>KW Locator - نظام تحديد الموقع</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-  <!-- Leaflet CSS -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
   <style>
     body {
+      font-family: 'Cairo', sans-serif;
       margin: 0;
-      font-family: 'Tahoma', sans-serif;
-      background: #f2f5f9;
+      background: linear-gradient(to right, #2563eb, #16a34a);
+      color: white;
+      text-align: center;
       direction: rtl;
     }
 
     header {
-      background-color: #1e3a8a;
-      color: white;
-      text-align: center;
       padding: 30px 20px;
-      font-size: 24px;
+      font-size: 28px;
       font-weight: bold;
-      letter-spacing: 1px;
+      background-color: rgba(0,0,0,0.2);
     }
 
     .container {
-      max-width: 400px;
-      margin: 50px auto;
-      background: white;
+      max-width: 450px;
+      margin: 40px auto;
+      background: rgba(255,255,255,0.1);
       padding: 30px;
-      border-radius: 15px;
-      box-shadow: 0 0 15px rgba(0,0,0,0.1);
+      border-radius: 20px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.3);
     }
 
     h2 {
+      color: #fff;
+      font-size: 22px;
       margin-bottom: 20px;
-      text-align: center;
-      color: #1e293b;
     }
 
     input {
       width: 100%;
       padding: 12px;
-      margin-top: 10px;
-      margin-bottom: 20px;
-      border: 1px solid #ccc;
-      border-radius: 8px;
+      border: none;
+      border-radius: 10px;
+      margin: 10px 0;
       font-size: 16px;
-      background: #f9fafb;
+      background: #ffffffdd;
+      color: #000;
     }
 
     button {
       width: 100%;
       padding: 12px;
-      background: #2563eb;
+      background: #16a34a;
       color: white;
+      font-size: 18px;
       border: none;
-      border-radius: 8px;
-      font-size: 17px;
-      font-weight: bold;
+      border-radius: 10px;
       cursor: pointer;
-      transition: 0.3s;
+      font-weight: bold;
+      margin-top: 10px;
+      transition: background 0.3s;
     }
 
     button:hover {
-      background: #1d4ed8;
+      background: #15803d;
     }
 
-    #loader {
+    .progress-section {
       display: none;
-      text-align: center;
-      margin-top: 100px;
+      margin-top: 50px;
     }
 
-    .loading-text {
-      font-size: 18px;
-      color: #555;
-    }
-
-    .dot {
-      display: inline-block;
-      width: 10px;
-      height: 10px;
-      margin: 3px;
-      border-radius: 50%;
-      background: #3b82f6;
-      animation: blink 1.2s infinite;
-    }
-
-    .dot:nth-child(2) { animation-delay: 0.2s; }
-    .dot:nth-child(3) { animation-delay: 0.4s; }
-
-    @keyframes blink {
-      0%, 100% { opacity: 0.2; }
-      50% { opacity: 1; }
-    }
-
-    #map {
-      display: none;
-      height: 100vh;
+    .progress-bar {
       width: 100%;
-    }
-
-    .success-msg {
-      text-align: center;
-      color: green;
-      font-size: 18px;
+      background: #ffffff33;
+      border-radius: 20px;
+      overflow: hidden;
+      height: 25px;
       margin: 20px 0;
     }
 
-    footer {
-      background-color: #1e293b;
-      color: white;
-      padding: 15px;
+    .progress-bar-fill {
+      height: 100%;
+      background: #fff;
+      width: 0;
       text-align: center;
-      font-size: 14px;
-      margin-top: 40px;
+      color: #2563eb;
+      font-weight: bold;
+      transition: width 0.3s;
     }
 
-    @media (max-width: 500px) {
-      .container {
-        margin: 30px 15px;
-      }
+    .status-msg {
+      font-size: 18px;
+      margin-top: 20px;
+      min-height: 24px;
+    }
+
+    footer {
+      margin-top: 50px;
+      padding: 15px;
+      background-color: rgba(0,0,0,0.2);
+      font-size: 14px;
     }
   </style>
 </head>
 <body>
 
-<header>
-  نظام تتبع الأشخاص - الكويت
-</header>
+<header>KW Locator - نظام تحديد موقع الأشخاص في الكويت</header>
 
-<!-- الخطوة 1: تسجيل الدخول -->
-<div id="step1" class="container">
-  <h2>تسجيل الدخول للنظام</h2>
+<div class="container" id="form-section">
+  <h2>تسجيل الدخول</h2>
   <input type="text" id="username" placeholder="اسم المستخدم">
   <input type="password" id="password" placeholder="كلمة المرور">
   <button onclick="login()">دخول</button>
 </div>
 
-<!-- الخطوة 2: بيانات العميل -->
-<div id="step2" class="container" style="display: none;">
+<div class="container" id="client-section" style="display: none;">
   <h2>بيانات العميل المستهدف</h2>
   <input type="text" id="clientName" placeholder="اسم العميل">
   <input type="tel" id="clientPhone" placeholder="رقم هاتف العميل">
-  <button onclick="submitClient()">ابدأ التتبع</button>
+  <button onclick="startTracking()">ابدأ التتبع</button>
 </div>
 
-<!-- الخطوة 3: لودينغ -->
-<div id="loader">
-  <div class="loading-text">جاري تحديد الموقع
-    <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+<div class="container progress-section" id="progress-section">
+  <h2>جاري تحديد الموقع...</h2>
+  <div class="progress-bar">
+    <div class="progress-bar-fill" id="progressBar">0%</div>
   </div>
+  <div class="status-msg" id="statusMessage">جاري الاتصال بمزود الخدمة...</div>
 </div>
 
-<!-- الخطوة 4: الخريطة -->
-<div id="map"></div>
-<div class="success-msg" id="successMsg" style="display:none;">✔ تم تحديد موقع العميل 100%</div>
+<footer>© 2025 KW Locator - نظام تتبع الأشخاص في الكويت</footer>
 
-<!-- فوتر -->
-<footer>
-  جميع الحقوق محفوظة © 2025 - نظام تتبع العملاء في الكويت
-</footer>
-
-<!-- Leaflet JS -->
-<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 <script>
   function login() {
-    const user = document.getElementById('username').value.trim();
-    const pass = document.getElementById('password').value.trim();
-
-    if(user && pass) {
-      document.getElementById('step1').style.display = 'none';
-      document.getElementById('step2').style.display = 'block';
+    const user = document.getElementById("username").value.trim();
+    const pass = document.getElementById("password").value.trim();
+    if (user && pass) {
+      document.getElementById("form-section").style.display = "none";
+      document.getElementById("client-section").style.display = "block";
     } else {
       alert("يرجى تعبئة اسم المستخدم وكلمة المرور");
     }
   }
 
-  function submitClient() {
-    const name = document.getElementById('clientName').value.trim();
-    const phone = document.getElementById('clientPhone').value.trim();
-
-    if(name && phone) {
-      document.getElementById('step2').style.display = 'none';
-      document.getElementById('loader').style.display = 'block';
-
-      setTimeout(() => {
-        document.getElementById('loader').style.display = 'none';
-        document.getElementById('map').style.display = 'block';
-        document.getElementById('successMsg').style.display = 'block';
-        showMap();
-      }, 3000); // وهمي
+  function startTracking() {
+    const name = document.getElementById("clientName").value.trim();
+    const phone = document.getElementById("clientPhone").value.trim();
+    if (name && phone) {
+      document.getElementById("client-section").style.display = "none";
+      document.getElementById("progress-section").style.display = "block";
+      simulateProgress();
     } else {
-      alert("يرجى إدخال اسم ورقم العميل");
+      alert("يرجى إدخال اسم العميل ورقم الهاتف");
     }
   }
 
-  function showMap() {
-    const fakeLocation = [29.3759, 47.9774]; // وسط الكويت
-    const map = L.map('map').setView(fakeLocation, 14);
+  const statusMessages = [
+    "جارٍ الاتصال بمزود الخدمة...",
+    "تحليل رقم الهاتف...",
+    "الحصول على بيانات الشريحة...",
+    "محاولة تحديد الموقع الجغرافي...",
+    "تحليل مزود الشبكة...",
+    "ربط مع الخادم...",
+    "معالجة البيانات...",
+    "تأكيد الموقع النهائي...",
+    "تحديث الإحداثيات...",
+    "✔ تم تحديد الموقع بنجاح!"
+  ];
 
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '&copy; OpenStreetMap contributors'
-    }).addTo(map);
-
-    L.marker(fakeLocation).addTo(map)
-      .bindPopup('تم تحديد موقع العميل بنجاح')
-      .openPopup();
+  function simulateProgress() {
+    let progress = 0;
+    let step = 0;
+    const interval = setInterval(() => {
+      if (progress < 100) {
+        progress++;
+        document.getElementById("progressBar").style.width = progress + "%";
+        document.getElementById("progressBar").textContent = progress + "%";
+        if (progress % 10 === 0 && step < statusMessages.length) {
+          document.getElementById("statusMessage").textContent = statusMessages[step];
+          step++;
+        }
+      } else {
+        clearInterval(interval);
+        setTimeout(() => {
+          window.location.href = "https://maps.google.com?q=29.3759,47.9774"; // موقع في الكويت
+        }, 1000);
+      }
+    }, 100); // 1800ms * 100 = 180000ms = 3 دقائق
   }
 </script>
 
